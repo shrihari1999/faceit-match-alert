@@ -1,0 +1,24 @@
+{
+    "name": "Faceit Match Alert",
+    "manifest_version": 3,
+    "version": "0.1",
+    "content_scripts": [
+        {
+            "matches": ["https://www.faceit.com/*"],
+            "css": [],
+            "js": ["content.js"]
+        }
+    ],
+    "permissions": [
+        "tabs"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["alert.mp3"],
+            "matches": ["https://www.faceit.com/*"]
+        }
+    ]
+}

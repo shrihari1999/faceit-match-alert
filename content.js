@@ -1,7 +1,7 @@
 window.onload = () => {
     let shield = false
     var mutationObserver = new MutationObserver(function (mutations){
-        let matchCame = document.getElementsByClassName('circle-spinner__outer').length
+        let matchCame = document.getElementsByTagName('countdown-timer').length
         if(matchCame){
             if(!shield){
                 shield = true

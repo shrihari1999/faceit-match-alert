@@ -1,18 +1,19 @@
 const createAudioWindow = async () => {
     let url = chrome.runtime.getURL('audio.html');
-    url += '?notification=1'
-    ({ id } = await chrome.windows.create({
+
+    chrome.windows.create({
         type: 'popup',
-        focused: false,
+        focused: true,
         top: 1,
         left: 1,
         height: 1,
         width: 1,
         url,
-    }));
+    })
     
-  await chrome.windows.update(id, { focused: false });
-  return id;
+    // await chrome.windows.update(window.id, { focused: true, state: 'docked' });
+    // return window.id;
+    return
 };
 
 chrome.runtime.onMessage.addListener(
@@ -20,8 +21,8 @@ chrome.runtime.onMessage.addListener(
         let tabId = sender.tab.id
         chrome.tabs.get(tabId, async (tab) => {
             let muted = true
-            await chrome.tabs.update(tabId, { muted });
-            await createAudioWindow();
+            chrome.tabs.update(tabId, { muted });
+            createAudioWindow();
         });
     }
 );

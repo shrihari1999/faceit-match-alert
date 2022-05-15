@@ -1,20 +1,20 @@
 onload = async () => {
     // play single notification
-    if (new URL(location.href).searchParams.get('notification') == 1) {
-      const ac = new AudioContext();
-      const osc = new OscillatorNode(ac);
-      osc.connect(ac.destination);
-      osc.start(ac.currentTime);
-      osc.stop(ac.currentTime + 1);
-      await new Promise((resolve) => {
-        osc.onended = async () => {
-          await ac.close();
-          resolve();
-        };
-      });
-      close();
-    }
-    // https://github.com/GoogleChrome/samples/blob/gh-pages/media-session/audio.js
+    // if (new URL(location.href).searchParams.get('notification') == 1) {
+    //   const ac = new AudioContext();
+    //   const osc = new OscillatorNode(ac);
+    //   osc.connect(ac.destination);
+    //   osc.start(ac.currentTime);
+    //   osc.stop(ac.currentTime + 10);
+    //   await new Promise((resolve) => {
+    //     osc.onended = async () => {
+    //       await ac.close();
+    //       resolve();
+    //     };
+    //   });
+    //   close();
+    // }
+    // // https://github.com/GoogleChrome/samples/blob/gh-pages/media-session/audio.js
     let audio = document.createElement('audio');
   
     playAudio();

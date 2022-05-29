@@ -18,11 +18,15 @@ const createAudioWindow = async () => {
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        let tabId = sender.tab.id
-        chrome.tabs.get(tabId, async (tab) => {
-            let muted = true
-            chrome.tabs.update(tabId, { muted });
+        if(request){
             createAudioWindow();
-        });
+        }
+        else{
+            let tabId = sender.tab.id
+            chrome.tabs.get(tabId, async (tab) => {
+                let muted = true
+                chrome.tabs.update(tabId, { muted });
+            });
+        }
     }
 );

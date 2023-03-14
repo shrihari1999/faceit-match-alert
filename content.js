@@ -165,6 +165,7 @@ window.onload = () => {
         }
         if(parasiteReady && Boolean(shadowRoot.querySelector('div[name="roster1"]'))){
             // show how many times we have played with each opponent
+            let counter = {}
             if(!countShield){
                 countShield = true
                 setTimeout(() => {
@@ -203,7 +204,7 @@ window.onload = () => {
                             }
                             // accumulate counter once all promises resolved
                             Promise.all(promises).then(results => {
-                                let counter = {}
+                                counter = {}
                                 results.forEach(result => {
                                     result['items'].forEach(match => {
                                         const { faction1, faction2 } = match['teams']
@@ -213,21 +214,32 @@ window.onload = () => {
                                         let opponentWon;
                                         if(opponentFaction){
                                             opponentFaction = faction1
-                                            opponentWon = Number(match['results']['winner'] == 'faction1')
+                                            opponentWon = match['results']['winner'] == 'faction1'
                                         }
                                         else{
                                             opponentFaction = faction2
-                                            opponentWon = Number(match['results']['winner'] == 'faction2')
+                                            opponentWon = match['results']['winner'] == 'faction2'
                                         }
                                         opponentFaction['players'].forEach(player => {
                                             let key = player['player_id']
                                             if(counter[key]){
-                                                counter[key].played += 1
-                                                counter[key].won += opponentWon
+                                                counter[key].matches.push({
+                                                    url: match['faceit_url'].replace('{lang}', 'en')
+                                                    won: opponentWon
+                                                })
+                                                counter[key].won += Number(opponentWon)
                                                 counter[key].lost += Number(!opponentWon)
                                             }
                                             else{
-                                                counter[key] = { played: 1, won: opponentWon, lost: Number(!opponentWon) }
+                                                counter[key] = {
+                                                    name: player['nickname']
+                                                    matches: [{
+                                                        url: match['faceit_url'].replace('{lang}', 'en')
+                                                        won: opponentWon
+                                                    }],
+                                                    won: Number(opponentWon),
+                                                    lost: Number(!opponentWon)
+                                                }
                                             }
                                         });
                                     });
@@ -252,14 +264,14 @@ window.onload = () => {
                                     }
                                     opponentFaction['roster'].forEach(player => {
                                         let playerName = player['nickname']
-                                        let playerHistory = counter[player['id']] || { played: 0, won: 0, lost: 0 }
+                                        let playerHistory = counter[player['id']] || { matches: [], won: 0, lost: 0 }
                                         // update player history
                                         let rosterContainer = shadowRoot.querySelector(`div[name="${rosterContainerName}"]`)
                                         let divs = rosterContainer.querySelectorAll('div')
                                         for (let i = 0; i < divs.length; i++) {
                                             if(divs[i].innerText == playerName){
                                                 let historyContainer = divs[i].cloneNode()
-                                                historyContainer.innerHTML = `P: ${playerHistory.played}&emsp;<span style="color: #32d35a">W</span>: ${playerHistory.won}&emsp;<span style="color: #ff6c20">L</span>: ${playerHistory.lost}`
+                                                historyContainer.innerHTML = `<span style="color: #32d35a">W</span>: ${playerHistory.won}&emsp;<span style="color: #ff6c20">L</span>: ${playerHistory.lost}`
                                                 divs[i].after(historyContainer)
                                                 break
                                             }
@@ -269,6 +281,37 @@ window.onload = () => {
                             })
                         })
                     })
+                }, 1000);
+            }
+            // show history in player modal
+            let playerNameLink = document.querySelector('div[data-popper-escaped="true"] a[href*="players-modal"]')
+            let statsContainer = document.querySelector('div[data-popper-escaped="true"]>div>div>div:last-child>div:last-child')
+            let historyContainerExists = Boolean(document.getElementById('history-container'))
+            if(!historyContainerExists && playerNameLink && statsContainer){
+                setTimeout(() => {
+                    let playerName = playerNameLink.href.split('players-modal/')[1]
+                    let playerId = Object.keys(counter).find(userId => {
+                        return counter[userId].name === playerName
+                    });
+                    if(!counter[playerId]){
+                        return
+                    }
+                    
+                    let historyHtml = ''
+                    counter[playerId].matches.forEach(match => {
+                        let span = `<span style="color: ${match.won ? '#32d35a' : '#ffffff99'}; font-weight: bold;">${match.won ? 'W' : 'L'}</span>`
+                        let link = `<a href="${match['url']}" target="_blank" style="margin: 0 4px 0 0;">${span}</a>`
+                        historyHtml += link
+                    });
+                    let historyContainer = statsContainer.cloneNode(true)
+                    historyContainer.setAttribute('id', 'history-container')
+                    historyContainer.children[0].textContent = 'History with you'
+                    historyContainer.querySelector('div').children[0].remove()
+                    historyContainer.querySelector('div').children[0].remove()
+                    let historyListContainer = historyContainer.querySelector('div').children[0]
+                    historyListContainer.children[0].innerHTML = historyHtml
+                    historyListContainer.children[1].textContent = 'Click a result to view match'
+                    statsContainer.after(historyContainer)
                 }, 1000);
             }
         }

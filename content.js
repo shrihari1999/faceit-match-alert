@@ -292,28 +292,31 @@ window.onload = () => {
             if(!historyContainerExists && playerNameLink && statsContainerReady && counterReady){
                 if(!historyShield){
                     historyShield = true
-                    let playerName = playerNameLink.href.split('players-modal/')[1]
-                    let playerId = Object.keys(counter).find(userId => {
-                        return counter[userId].name == playerName
-                    });
-                    let historyHtml = ''
-                    counter[playerId].matches.forEach(match => {
-                        let span = `<span style="color: ${match.won ? '#32d35a' : '#ffffff99'}; font-weight: bold;">${match.won ? 'W' : 'L'}</span>`
-                        let link = `<a href="${match['url']}" target="_blank" style="margin: 0 4px 0 0;">${span}</a>`
-                        historyHtml += link
-                    });
-                    let historyContainer = statsContainer.cloneNode(true)
-                    historyContainer.setAttribute('id', 'history-container')
-                    historyContainer.children[0].textContent = 'History with you'
-                    historyContainer.querySelector('div').children[0].remove()
-                    historyContainer.querySelector('div').children[0].remove()
-                    let historyListContainer = historyContainer.querySelector('div').children[0]
-                    historyListContainer.children[0].style.display = 'flex'
-                    historyListContainer.children[0].style.flexWrap = 'wrap'
-                    historyListContainer.children[0].innerHTML = historyHtml
-                    historyListContainer.children[1].textContent = 'Click on a result to view match'
-                    statsContainer.after(historyContainer)
-                    historyShield = false
+                    setTimeout(() => {
+                        let historyContainer = statsContainer.cloneNode(true)
+                        let playerName = playerNameLink.href.split('players-modal/')[1]
+                        let playerId = Object.keys(counter).find(userId => {
+                            return counter[userId].name == playerName
+                        });
+
+                        let historyHtml = ''
+                        counter[playerId].matches.forEach(match => {
+                            let span = `<span style="color: ${match.won ? '#32d35a' : '#ffffff99'}; font-weight: bold;">${match.won ? 'W' : 'L'}</span>`
+                            let link = `<a href="${match['url']}" target="_blank" style="margin: 0 4px 0 0;">${span}</a>`
+                            historyHtml += link
+                        });
+                        historyContainer.setAttribute('id', 'history-container')
+                        historyContainer.children[0].textContent = 'History with you'
+                        historyContainer.querySelector('div').children[0].remove()
+                        historyContainer.querySelector('div').children[0].remove()
+                        let historyListContainer = historyContainer.querySelector('div').children[0]
+                        historyListContainer.children[0].style.display = 'flex'
+                        historyListContainer.children[0].style.flexWrap = 'wrap'
+                        historyListContainer.children[0].innerHTML = historyHtml
+                        historyListContainer.children[1].textContent = 'Click on a result to view match'
+                        statsContainer.after(historyContainer)
+                        historyShield = false
+                    }, 500);
                 }
             }
         }

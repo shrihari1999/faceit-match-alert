@@ -71,6 +71,10 @@ window.onload = () => {
     let reportShield = false
     let ipShield = false
     let countShield = false
+    let historyShield = false
+    
+    let counter = {}
+    let counterReady = false
     var mutationObserverForReport = new MutationObserver(function (){
         const shadowRoot = document.getElementById('parasite-container').shadowRoot
         let parasiteReady = Boolean(shadowRoot) && (typeof(shadowRoot.querySelector) === 'function')
@@ -147,8 +151,6 @@ window.onload = () => {
                             link.click()
                             URL.revokeObjectURL(link.href)
                             navigator.clipboard.writeText(text)
-                            // buttons[i].click()
-                            // buttons[i].dispatchEvent(new Event('click'))
                             break
                         }
                     }
@@ -165,7 +167,6 @@ window.onload = () => {
         }
         if(parasiteReady && Boolean(shadowRoot.querySelector('div[name="roster1"]'))){
             // show how many times we have played with each opponent
-            let counter = {}
             if(!countShield){
                 countShield = true
                 setTimeout(() => {
@@ -204,7 +205,6 @@ window.onload = () => {
                             }
                             // accumulate counter once all promises resolved
                             Promise.all(promises).then(results => {
-                                counter = {}
                                 results.forEach(result => {
                                     result['items'].forEach(match => {
                                         const { faction1, faction2 } = match['teams']
@@ -224,7 +224,7 @@ window.onload = () => {
                                             let key = player['player_id']
                                             if(counter[key]){
                                                 counter[key].matches.push({
-                                                    url: match['faceit_url'].replace('{lang}', 'en')
+                                                    url: match['faceit_url'].replace('{lang}', 'en'),
                                                     won: opponentWon
                                                 })
                                                 counter[key].won += Number(opponentWon)
@@ -232,9 +232,9 @@ window.onload = () => {
                                             }
                                             else{
                                                 counter[key] = {
-                                                    name: player['nickname']
+                                                    name: player['nickname'],
                                                     matches: [{
-                                                        url: match['faceit_url'].replace('{lang}', 'en')
+                                                        url: match['faceit_url'].replace('{lang}', 'en'),
                                                         won: opponentWon
                                                     }],
                                                     won: Number(opponentWon),
@@ -244,6 +244,7 @@ window.onload = () => {
                                         });
                                     });
                                 });
+                                counterReady = true
                                 // assign counts to each player
                                 let matchId = location.href.split('room/')[1]
                                 fetch(`https://api.faceit.com/match/v2/match/${matchId}`)
@@ -286,17 +287,15 @@ window.onload = () => {
             // show history in player modal
             let playerNameLink = document.querySelector('div[data-popper-escaped="true"] a[href*="players-modal"]')
             let statsContainer = document.querySelector('div[data-popper-escaped="true"]>div>div>div:last-child>div:last-child')
+            let statsContainerReady = Boolean(statsContainer && statsContainer.querySelector('div').children.length == 3)
             let historyContainerExists = Boolean(document.getElementById('history-container'))
-            if(!historyContainerExists && playerNameLink && statsContainer){
-                setTimeout(() => {
+            if(!historyContainerExists && playerNameLink && statsContainerReady && counterReady){
+                if(!historyShield){
+                    historyShield = true
                     let playerName = playerNameLink.href.split('players-modal/')[1]
                     let playerId = Object.keys(counter).find(userId => {
-                        return counter[userId].name === playerName
+                        return counter[userId].name == playerName
                     });
-                    if(!counter[playerId]){
-                        return
-                    }
-                    
                     let historyHtml = ''
                     counter[playerId].matches.forEach(match => {
                         let span = `<span style="color: ${match.won ? '#32d35a' : '#ffffff99'}; font-weight: bold;">${match.won ? 'W' : 'L'}</span>`
@@ -309,10 +308,13 @@ window.onload = () => {
                     historyContainer.querySelector('div').children[0].remove()
                     historyContainer.querySelector('div').children[0].remove()
                     let historyListContainer = historyContainer.querySelector('div').children[0]
+                    historyListContainer.children[0].style.display = 'flex'
+                    historyListContainer.children[0].style.flexWrap = 'wrap'
                     historyListContainer.children[0].innerHTML = historyHtml
-                    historyListContainer.children[1].textContent = 'Click a result to view match'
+                    historyListContainer.children[1].textContent = 'Click on a result to view match'
                     statsContainer.after(historyContainer)
-                }, 1000);
+                    historyShield = false
+                }
             }
         }
         else{

@@ -285,8 +285,8 @@ window.onload = () => {
                 }, 1000);
             }
             // show history in player modal
-            let playerNameLink = document.querySelector('div[data-popper-escaped="true"] a[href*="players-modal"]')
-            let statsContainer = document.querySelector('div[data-popper-escaped="true"]>div>div>div:last-child>div:last-child')
+            let playerNameLink = document.querySelector('div[data-popper-escaped] a[href*="players-modal"]')
+            let statsContainer = document.querySelector('div[data-popper-escaped]>div>div>div:last-child>div:nth-child(3)')
             let statsContainerReady = statsContainer && !Boolean(statsContainer.querySelector('div>button'))
             let historyContainerExists = Boolean(document.getElementById('history-container'))
             if(!historyContainerExists && statsContainerReady && counterReady){

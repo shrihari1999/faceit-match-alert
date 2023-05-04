@@ -225,20 +225,20 @@ window.onload = () => {
                                             if(counter[key]){
                                                 counter[key].matches.push({
                                                     url: match['faceit_url'].replace('{lang}', 'en'),
-                                                    won: opponentWon
+                                                    won: !opponentWon
                                                 })
-                                                counter[key].won += Number(opponentWon)
-                                                counter[key].lost += Number(!opponentWon)
+                                                counter[key].won += Number(!opponentWon)
+                                                counter[key].lost += Number(opponentWon)
                                             }
                                             else{
                                                 counter[key] = {
                                                     name: player['nickname'],
                                                     matches: [{
                                                         url: match['faceit_url'].replace('{lang}', 'en'),
-                                                        won: opponentWon
+                                                        won: !opponentWon
                                                     }],
-                                                    won: Number(opponentWon),
-                                                    lost: Number(!opponentWon)
+                                                    won: Number(!opponentWon),
+                                                    lost: Number(opponentWon)
                                                 }
                                             }
                                         });

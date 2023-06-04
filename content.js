@@ -32,7 +32,7 @@ window.onload = () => {
         downloadButton.style.height = '48px'
         downloadButton.style.borderRadius = '2px'
         downloadButton.style.cursor = 'pointer'
-        downloadButton.style.zIndex = 14
+        downloadButton.style.zIndex = 66
         downloadButton.style.transition = 'width 0.2s,height 0.2s'
         downloadButton.style.backgroundColor = '#404040'
         downloadButton.style.display = 'flex'
@@ -76,14 +76,14 @@ window.onload = () => {
     let counter = {}
     let counterReady = false
     var mutationObserverForReport = new MutationObserver(function (){
-        const shadowRoot = document.getElementById('parasite-container').shadowRoot
-        let parasiteReady = Boolean(shadowRoot) && (typeof(shadowRoot.querySelector) === 'function')
-        if(parasiteReady && Boolean(shadowRoot.querySelector('div[name="info"]') && Boolean(shadowRoot.querySelector('div[name="info"]').querySelector('a')))){
+        const parasiteContainer = document.getElementById('parasite-container')
+        let parasiteReady = Boolean(parasiteContainer) && (typeof(parasiteContainer.querySelector) === 'function')
+        if(parasiteReady && Boolean(parasiteContainer.querySelector('div[name="info"]') && Boolean(parasiteContainer.querySelector('div[name="info"]').querySelector('a')))){
             // report all opponents in room
             if(!reportShield){
                 reportShield = true
                 setTimeout(() => {
-                    let infoContainer = shadowRoot.querySelector('div[name="info"]')
+                    let infoContainer = parasiteContainer.querySelector('div[name="info"]')
                     let newButton = infoContainer.querySelector('a').cloneNode(true)
                     newButton.removeAttribute('href')
                     newButton.style.marginTop = '10px';
@@ -139,7 +139,7 @@ window.onload = () => {
             if(!ipShield){
                 ipShield = true
                 setTimeout(() => {
-                    let infoContainer = shadowRoot.querySelector('div[name="info"]')
+                    let infoContainer = parasiteContainer.querySelector('div[name="info"]')
                     let buttons = infoContainer.querySelectorAll('a[href^="steam"]')
                     for (let i = 0; i < buttons.length; i++) {
                         if(buttons[i].innerText == 'CONNECT'){
@@ -165,7 +165,7 @@ window.onload = () => {
                 ipShield = false
             }
         }
-        if(parasiteReady && Boolean(shadowRoot.querySelector('div[name="roster1"]'))){
+        if(parasiteReady && Boolean(parasiteContainer.querySelector('div[name="roster1"]'))){
             // show how many times we have played with each opponent
             if(!countShield){
                 countShield = true
@@ -266,7 +266,7 @@ window.onload = () => {
                                         let playerName = player['nickname']
                                         let playerHistory = counter[player['id']] || { matches: [], won: 0, lost: 0 }
                                         // update player history
-                                        let rosterContainer = shadowRoot.querySelector(`div[name="${rosterContainerName}"]`)
+                                        let rosterContainer = parasiteContainer.querySelector(`div[name="${rosterContainerName}"]`)
                                         let divs = rosterContainer.querySelectorAll('div')
                                         for (let i = 0; i < divs.length; i++) {
                                             if(divs[i].innerText == playerName){

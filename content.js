@@ -205,6 +205,7 @@ window.onload = () => {
                             }
                             // accumulate counter once all promises resolved
                             Promise.all(promises).then(results => {
+                                counter = {}
                                 results.forEach(result => {
                                     result['items'].forEach(match => {
                                         const { faction1, faction2 } = match['teams']

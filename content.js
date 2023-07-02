@@ -270,7 +270,7 @@ window.onload = () => {
                                         let rosterContainer = parasiteContainer.querySelector(`div[name="${rosterContainerName}"]`)
                                         let divs = rosterContainer.querySelectorAll('div')
                                         for (let i = 0; i < divs.length; i++) {
-                                            if(divs[i].innerText == playerName){
+                                            if((divs[i].innerText == playerName) && (divs[i].previousSibling === null)){
                                                 let historyContainer = divs[i].cloneNode()
                                                 historyContainer.innerHTML = `<span style="color: #32d35a">W</span>: ${playerHistory.won}&emsp;<span style="color: #ff6c20">L</span>: ${playerHistory.lost}`
                                                 divs[i].after(historyContainer)

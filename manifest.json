@@ -1,7 +1,7 @@
 {
     "name": "Faceit Match Alert",
     "manifest_version": 3,
-    "version": "0.1",
+    "version": "0.2",
     "content_scripts": [
         {
             "matches": ["https://www.faceit.com/*"],
@@ -10,7 +10,8 @@
         }
     ],
     "permissions": [
-        "tabs"
+        "tabs",
+        "offscreen"
     ],
     "background": {
         "service_worker": "background.js"

@@ -16,24 +16,35 @@ function getHeaders(){
 }
 
 window.onload = () => {
-    // // wait for match
-    // chrome.runtime.sendMessage(false);
-    // let shield = false
-    // var mutationObserver = new MutationObserver(function (){
-    //     let matchCame = Boolean(document.querySelector('span[translate-once="ACCEPT"]'))
-    //     if(matchCame){
-    //         if(!shield){
-    //             shield = true
-    //             chrome.runtime.sendMessage(true);
-    //         }
-    //     }
-    //     else{
-    //         if(shield){
-    //             shield = false
-    //         }
-    //     }
-    // })
-    // mutationObserver.observe(document.body, {attributes: true, subtree: true, childList: true, characterData: true})
+    // wait for match
+    chrome.runtime.sendMessage(false);
+    let shield = false
+    var mutationObserver = new MutationObserver(function (){
+        let matchCame = false
+        if(document.querySelector('div[role="dialog"]')){
+            let buttons = document.querySelectorAll('div[role="dialog"] button')
+            for (let i = 0; i < buttons.length; i++) {
+                const node = buttons[i];
+                if(node.innerText.toLowerCase() == 'accept'){
+                    matchCame = true
+                    node.click()
+                    break
+                }
+            }
+        }
+        if(matchCame){
+            if(!shield){
+                shield = true
+                chrome.runtime.sendMessage(true);
+            }
+        }
+        else{
+            if(shield){
+                shield = false
+            }
+        }
+    })
+    mutationObserver.observe(document.body, {attributes: true, subtree: true, childList: true, characterData: true})
     
     // download latest match
     setTimeout(() => {

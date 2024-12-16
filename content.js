@@ -27,7 +27,9 @@ window.onload = () => {
                 const node = buttons[i];
                 if(node.innerText.toLowerCase() == 'accept'){
                     matchCame = true
-                    node.click()
+                    setTimeout(() => {
+                        node.click()
+                    }, 1000);
                     break
                 }
             }
@@ -102,13 +104,13 @@ window.onload = () => {
     let counter = {}
     let counterReady = false
     var mutationObserverForReport = new MutationObserver(function (){
-        if(Boolean(document.querySelector('div[name="info"]') && Boolean(document.querySelector('div[name="info"]').querySelector('a')))){
+        if(Boolean(document.querySelector('div[name="info"]') && Boolean(document.querySelector('div[name="info"]').querySelector('button')))){
             // report all opponents in room
             if(!reportShield){
                 reportShield = true
                 setTimeout(() => {
                     let infoContainer = document.querySelector('div[name="info"]')
-                    let newButton = infoContainer.querySelector('a').cloneNode(true)
+                    let newButton = infoContainer.querySelectorAll('button')[infoContainer.querySelectorAll('button').length - 1].cloneNode(true)
                     newButton.removeAttribute('href')
                     newButton.style.marginTop = '10px';
                     (newButton.querySelector('span') || newButton).innerText = 'Report all opponents'
@@ -158,27 +160,27 @@ window.onload = () => {
                     infoContainer.append(newButton)
                 }, 1000);
             }
-            // auto download current match ip
-            if(!ipShield){
-                ipShield = true
-                setTimeout(() => {
-                    let infoContainer = document.querySelector('div[name="info"]')
-                    let buttons = infoContainer.querySelectorAll('a[href^="steam"]')
-                    for (let i = 0; i < buttons.length; i++) {
-                        if(buttons[i].innerText == 'CONNECT'){
-                            let text = decodeURIComponent(buttons[i].href).split('+')[1]
-                            const link = document.createElement("a")
-                            const file = new Blob([text], { type: 'text/plain' })
-                            link.href = URL.createObjectURL(file)
-                            link.download = "faceit-ip.txt"
-                            link.click()
-                            URL.revokeObjectURL(link.href)
-                            navigator.clipboard.writeText(text)
-                            break
-                        }
-                    }
-                }, 1000);
-            }
+            // // auto download current match ip
+            // if(!ipShield){
+            //     ipShield = true
+            //     setTimeout(() => {
+            //         let infoContainer = document.querySelector('div[name="info"]')
+            //         let buttons = infoContainer.querySelectorAll('a[href^="steam"]')
+            //         for (let i = 0; i < buttons.length; i++) {
+            //             if(buttons[i].innerText == 'CONNECT'){
+            //                 let text = decodeURIComponent(buttons[i].href).split('+')[1]
+            //                 const link = document.createElement("a")
+            //                 const file = new Blob([text], { type: 'text/plain' })
+            //                 link.href = URL.createObjectURL(file)
+            //                 link.download = "faceit-ip.txt"
+            //                 link.click()
+            //                 URL.revokeObjectURL(link.href)
+            //                 navigator.clipboard.writeText(text)
+            //                 break
+            //             }
+            //         }
+            //     }, 1000);
+            // }
         }
         else{
             if(reportShield){

@@ -59,54 +59,6 @@ window.onload = () => {
         }
     })
     mutationObserver.observe(document.body, {attributes: true, subtree: true, childList: true, characterData: true})
-    
-    // download latest match
-    setTimeout(() => {
-        let downloadButton = document.createElement('div')
-        downloadButton.setAttribute('class', 'download-button')
-        downloadButton.innerHTML = '<span>▼</span>'
-        downloadButton.style.position = 'fixed'
-        downloadButton.style.bottom = '80px'
-        downloadButton.style.right = '16px'
-        downloadButton.style.width = '48px'
-        downloadButton.style.height = '48px'
-        downloadButton.style.borderRadius = '2px'
-        downloadButton.style.cursor = 'pointer'
-        downloadButton.style.zIndex = 66
-        downloadButton.style.transition = 'width 0.2s,height 0.2s'
-        downloadButton.style.backgroundColor = '#404040'
-        downloadButton.style.display = 'flex'
-        downloadButton.style.justifyContent = 'center'
-        downloadButton.style.alignItems = 'center'
-        downloadButton.style.color = '#cacaca'
-        downloadButton.style.fontSize = '26px'
-        downloadButton.style.boxShadow = '0 4px 12px 0 rgb(0 0 0 / 75%)'
-        let body = document.getElementsByTagName('body')[0]
-        body.appendChild(downloadButton)
-        
-        downloadButton.onclick = function(){
-            fetch("https://www.faceit.com/api/users/v1/sessions/me", {
-                "headers": getHeaders(),
-                "mode": "cors",
-                "credentials": "include"
-            })
-            .then(r => r.json())
-            .then(r => {
-                let userId = r['payload']['id']
-                fetch(`https://api.faceit.com/stats/v1/stats/time/users/${userId}/games/cs2?page=0&size=1`)
-                .then(r => r.json())
-                .then(r => {
-                    let mapName = r[0]['i1']
-                    if(confirm(`Download ${mapName}?`)){
-                        let matchId = r[0]['matchId']
-                        fetch(`https://api.faceit.com/match/v2/match/${matchId}`)
-                        .then(r => r.json())
-                        .then(r => window.open(r['payload']['demoURLs'][0]))
-                    }
-                })
-            })
-        }
-    }, 3000);
 
     let reportShield = false
     let ipShield = false

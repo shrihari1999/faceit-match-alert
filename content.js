@@ -339,7 +339,6 @@ window.onload = () => {
                                                 }
                                                 else{
                                                     const script = Array.from(htmlDocument.querySelectorAll("script")).find(s => s.textContent.includes("InitializeCommentThread"));
-                                                    console.log(script)
                                                     if(script){
                                                         const totalCommentCount = parseInt(script.textContent.match(/"total_count"\s*:\s*(\d+)/)[1], 10)
                                                         const pageSize = parseInt(script.textContent.match(/"pagesize"\s*:\s*(\d+)/)[1], 10)
@@ -371,16 +370,16 @@ window.onload = () => {
                 }, 1000);
             }
             // show history in player modal
-            let playerNameLink = document.querySelector('div[data-popper-escaped] a[class^="UserCard__NicknameContainer"]')
-            let statsContainer = document.querySelector('div[class^="UserCard__Section-"]')
+            let playerNameContainer = document.querySelector('div[class^="styles__NameContainer"] h5')
+            let statsContainer = document.querySelector('div[class^="RatingsAndStats__Container"]')
             let statsContainerReady = statsContainer
             let historyContainerExists = Boolean(document.getElementById('history-container'))
-            if(playerNameLink && !historyContainerExists && statsContainerReady && counterReady){
+            if(playerNameContainer && !historyContainerExists && statsContainerReady && counterReady){
                 if(!historyShield){
                     historyShield = true
                     let historyContainer = statsContainer.cloneNode(true)
                     historyContainer.setAttribute('id', 'history-container')
-                    let playerName = playerNameLink.href.split('/').slice(-1)[0]
+                    let playerName = playerNameContainer.textContent
                     let playerId = Object.keys(counter).find(userId => {
                         return counter[userId].name == playerName
                     });
@@ -395,15 +394,15 @@ window.onload = () => {
                         let link = `<a href="${match['url']}" target="_blank" style="margin: 0 4px 0 0;">${span}</a>`
                         historyHtml += link
                     });
-                    historyContainer.children[0].textContent = 'Your history against them'
-                    historyContainer.querySelector('div').children[0].querySelector('span').textContent = counter[playerId].won + counter[playerId].lost
-                    historyContainer.querySelector('div').children[1].querySelector('span').textContent = Math.round(counter[playerId].won * 100 / (counter[playerId].won + counter[playerId].lost))
-                    let historyListContainer = historyContainer.querySelector('div').children[2]
-                    historyListContainer.children[0].style.display = 'flex'
-                    historyListContainer.children[0].style.flexWrap = 'wrap'
-                    historyListContainer.children[0].innerHTML = historyHtml
-                    historyListContainer.children[1].textContent = 'Matchrooms'
+                    historyContainer.children[0].children[1].textContent = counter[playerId].won + counter[playerId].lost
+                    historyContainer.children[1].children[1].textContent = Math.round(counter[playerId].won * 100 / (counter[playerId].won + counter[playerId].lost))
+                    let historyListContainer = historyContainer.children[2]
+                    historyListContainer.children[0].textContent = 'Matchrooms'
+                    historyListContainer.children[1].style.display = 'flex'
+                    historyListContainer.children[1].style.flexWrap = 'wrap'
+                    historyListContainer.children[1].innerHTML = historyHtml
                     statsContainer.after(historyContainer)
+                    statsContainer.after(`Your history against them`)
                     historyShield = false
                 }
             }

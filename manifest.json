@@ -24,5 +24,8 @@
             "resources": ["alert.mp3"],
             "matches": ["https://www.faceit.com/*"]
         }
-    ]
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    }
 }

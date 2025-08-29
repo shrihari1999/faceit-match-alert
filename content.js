@@ -237,130 +237,133 @@ window.onload = () => {
                                 .then(r => r.json())
                                 .then(r => {
                                     const { faction1, faction2 } = r['payload']['teams']
-                                    let opponentFaction = faction1['roster'].find(player => {
+                                    let opponentFactions = []
+                                    let opponentFactionIs1 = faction1['roster'].find(player => {
                                             return player['id'] == userId
                                     }) === undefined
-                                    let rosterContainerName;
-                                    if(opponentFaction){
-                                        opponentFaction = faction1
-                                        rosterContainerName = 'roster1'
+                                    let opponentFactionIs2 = faction2['roster'].find(player => {
+                                            return player['id'] == userId
+                                    }) === undefined
+                                    if(opponentFactionIs1){
+                                        opponentFactions.push({opponentFaction: faction1, rosterContainerName: 'roster1'})
                                     }
-                                    else{
-                                        opponentFaction = faction2
-                                        rosterContainerName = 'roster2'
+                                    if(opponentFactionIs2){
+                                        opponentFactions.push({opponentFaction: faction2, rosterContainerName: 'roster2'})
                                     }
-                                    opponentFaction['roster'].forEach(player => {
-                                        let playerName = player['nickname']
-                                        let playerHistory = counter[player['id']] || { matches: [], won: 0, lost: 0 }
-                                        // update player history
-                                        let rosterContainer = document.querySelector(`div[name="${rosterContainerName}"]`)
-                                        let divs = rosterContainer.querySelectorAll('div')
-                                        for (let i = 0; i < divs.length; i++) {
-                                            if((divs[i].innerText == playerName) && (divs[i].previousSibling === null)){
-                                                let historyContainer = divs[i].cloneNode()
-                                                historyContainer.innerHTML = `<span style="color: #32d35a">Your Ws</span>: ${playerHistory.won}&emsp;<span style="color: #ff6c20">Your Ls</span>: ${playerHistory.lost}`
-                                                divs[i].after(historyContainer)
+                                    opponentFactions.forEach(opponentFactionObject => {
+                                        opponentFactionObject.opponentFaction['roster'].forEach(player => {
+                                            let playerName = player['nickname']
+                                            let playerHistory = counter[player['id']] || { matches: [], won: 0, lost: 0 }
+                                            // update player history
+                                            let rosterContainer = document.querySelector(`div[name="${opponentFactionObject.rosterContainerName}"]`)
+                                            let divs = rosterContainer.querySelectorAll('div')
+                                            for (let i = 0; i < divs.length; i++) {
+                                                if((divs[i].innerText == playerName) && (divs[i].previousSibling === null)){
+                                                    let historyContainer = divs[i].cloneNode()
+                                                    historyContainer.innerHTML = `<span style="color: #32d35a">Your Ws</span>: ${playerHistory.won}&emsp;<span style="color: #ff6c20">Your Ls</span>: ${playerHistory.lost}`
+                                                    divs[i].after(historyContainer)
 
-                                                let node = divs[i]
-                                                while (node && node !== document) {
-                                                    if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DIV' && [...node.classList].some(cls => cls.startsWith('ListContentPlayer__Body'))) {
-                                                        let eloNumber = node.querySelector('div[class^="TextBlock__Holder"]')
-                                                        let eloContainer = eloNumber.cloneNode()
-                                                        eloContainer.setAttribute('id', `max-level-${player['id']}`)
-                                                        eloContainer.style.flexDirection = 'row'
-                                                        eloContainer.style.justifyContent = 'space-evenly'
-                                                        eloNumber.appendChild(eloContainer)
-                                                        break
+                                                    let node = divs[i]
+                                                    while (node && node !== document) {
+                                                        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'DIV' && [...node.classList].some(cls => cls.startsWith('ListContentPlayer__Body'))) {
+                                                            let eloNumber = node.querySelector('div[class^="TextBlock__Holder"]')
+                                                            let eloContainer = eloNumber.cloneNode()
+                                                            eloContainer.setAttribute('id', `max-level-${player['id']}`)
+                                                            eloContainer.style.flexDirection = 'row'
+                                                            eloContainer.style.justifyContent = 'space-evenly'
+                                                            eloNumber.appendChild(eloContainer)
+                                                            break
+                                                        }
+                                                        node = node.parentNode;
                                                     }
-                                                    node = node.parentNode;
-                                                }
 
-                                                let commentsContainer = divs[i].cloneNode()
-                                                commentsContainer.setAttribute('id', `suspicious-comments-${player['id']}`)
-                                                divs[i].after(commentsContainer)
-                                                steamIdMapping[player['id']] = player['gameId']
-                                                break
+                                                    let commentsContainer = divs[i].cloneNode()
+                                                    commentsContainer.setAttribute('id', `suspicious-comments-${player['id']}`)
+                                                    divs[i].after(commentsContainer)
+                                                    steamIdMapping[player['id']] = player['gameId']
+                                                    break
+                                                }
                                             }
-                                        }
-                                        
-                                        // get and update max level
-                                        let promises = []
-                                        fetch(`https://api.faceit.com/stats/v1/stats/users/${player['id']}/games/cs2`)
-                                        .then(r => r.json())
-                                        .then(r => {
-                                            // scan all matches of player
-                                            let numberOfMatches = Math.min(Number(r['lifetime']['m1']), 1000) // max 1000
-                                            let limit = 100 // max 100
-                                            let offset = 0
-                                            while (offset < numberOfMatches) {
-                                                let promise = fetch(`https://open.faceit.com/data/v4/players/${player['id']}/history?game=cs2&offset=${offset}&limit=${limit}`, {
-                                                    "headers": {
-                                                        "accept": "application/json, text/plain, */*",
-                                                        "accept-language": "en-US,en;q=0.9",
-                                                        'authorization': `Bearer ${faceitApiKey}`
-                                                    },
-                                                })
-                                                .then(r => r.json())
-                                                promises.push(promise)
-                                                offset += limit
-                                            }
-                                            // accumulate counter once all promises resolved
-                                            Promise.all(promises).then(results => {
-                                                let maxLevel = 0
-                                                results.forEach(result => {
-                                                    result['items'].forEach(match => {
-                                                        const { faction1, faction2 } = match['teams']
-                                                        let opponentFaction = faction1['players'].find(factionPlayer => {
-                                                            return factionPlayer['player_id'] == player['id']
-                                                        }) === undefined
-                                                        let selfFaction;
-                                                        if(opponentFaction){
-                                                            selfFaction = faction2
-                                                        }
-                                                        else{
-                                                            selfFaction = faction1
-                                                        }
-                                                        selfFaction['players'].forEach(factionPlayer => {
-                                                            if (factionPlayer['player_id'] == player['id']){
-                                                                maxLevel = Math.max(maxLevel, factionPlayer['skill_level'])
+                                            
+                                            // get and update max level
+                                            let promises = []
+                                            fetch(`https://api.faceit.com/stats/v1/stats/users/${player['id']}/games/cs2`)
+                                            .then(r => r.json())
+                                            .then(r => {
+                                                // scan all matches of player
+                                                let numberOfMatches = Math.min(Number(r['lifetime']['m1']), 1000) // max 1000
+                                                let limit = 100 // max 100
+                                                let offset = 0
+                                                while (offset < numberOfMatches) {
+                                                    let promise = fetch(`https://open.faceit.com/data/v4/players/${player['id']}/history?game=cs2&offset=${offset}&limit=${limit}`, {
+                                                        "headers": {
+                                                            "accept": "application/json, text/plain, */*",
+                                                            "accept-language": "en-US,en;q=0.9",
+                                                            'authorization': `Bearer ${faceitApiKey}`
+                                                        },
+                                                    })
+                                                    .then(r => r.json())
+                                                    promises.push(promise)
+                                                    offset += limit
+                                                }
+                                                // accumulate counter once all promises resolved
+                                                Promise.all(promises).then(results => {
+                                                    let maxLevel = 0
+                                                    results.forEach(result => {
+                                                        result['items'].forEach(match => {
+                                                            const { faction1, faction2 } = match['teams']
+                                                            let opponentFaction = faction1['players'].find(factionPlayer => {
+                                                                return factionPlayer['player_id'] == player['id']
+                                                            }) === undefined
+                                                            let selfFaction;
+                                                            if(opponentFaction){
+                                                                selfFaction = faction2
                                                             }
+                                                            else{
+                                                                selfFaction = faction1
+                                                            }
+                                                            selfFaction['players'].forEach(factionPlayer => {
+                                                                if (factionPlayer['player_id'] == player['id']){
+                                                                    maxLevel = Math.max(maxLevel, factionPlayer['skill_level'])
+                                                                }
+                                                            });
                                                         });
                                                     });
+                                                    let levelColor = maxLevel == 1 ? '#ffffff' : maxLevel < 4 ? '#32d35a' : maxLevel < 8 ? '#efd02a' : maxLevel < 10 ? '#ff6309' : '#e24d14';
+                                                    let eloContainer = document.getElementById(`max-level-${player['id']}`)
+                                                    eloContainer.innerHTML = `<span style="font-size: 10px; color: #a7a7a7;">Max</span>&nbsp;<span style="font-size: 10px; color: ${levelColor};">${maxLevel}</span>`
                                                 });
-                                                let levelColor = maxLevel == 1 ? '#ffffff' : maxLevel < 4 ? '#32d35a' : maxLevel < 8 ? '#efd02a' : maxLevel < 10 ? '#ff6309' : '#e24d14';
-                                                let eloContainer = document.getElementById(`max-level-${player['id']}`)
-                                                eloContainer.innerHTML = `<span style="font-size: 10px; color: #a7a7a7;">Max</span>&nbsp;<span style="font-size: 10px; color: ${levelColor};">${maxLevel}</span>`
-                                            });
-                                            chrome.runtime.sendMessage({'type': 'comments-first', 'data': {profile: steamIdMapping[player['id']]}}, firstHtml => {
-                                                const parser = new DOMParser();
-                                                const htmlDocument = parser.parseFromString(firstHtml, "text/html");
-                                                if(htmlDocument.getElementsByClassName('profile_private_info').length){
-                                                    updateSuspiciousComments(player['id'], 'Private')
-                                                }
-                                                else{
-                                                    const script = Array.from(htmlDocument.querySelectorAll("script")).find(s => s.textContent.includes("InitializeCommentThread"));
-                                                    if(script){
-                                                        const totalCommentCount = parseInt(script.textContent.match(/"total_count"\s*:\s*(\d+)/)[1], 10)
-                                                        const pageSize = parseInt(script.textContent.match(/"pagesize"\s*:\s*(\d+)/)[1], 10)
-                                                        const totalPages = Math.ceil(totalCommentCount / pageSize);
-                                                        chrome.runtime.sendMessage({'type': 'comments', 'data': {profile: steamIdMapping[player['id']], totalPages: totalPages}}, htmlPages => {
-                                                            htmlPages.push(firstHtml)
-                                                            let suspiciousCount = 0
-                                                            for (const html of htmlPages) {
-                                                                const htmlDocument = parser.parseFromString(html, "text/html");
-                                                                let comments = Array.from(htmlDocument.getElementsByClassName('commentthread_comment_text')).map(el => el.textContent.trim())
-                                                                suspiciousCount += comments.filter(isSuspicious).length
-                                                            }
-                                                            updateSuspiciousComments(player['id'], suspiciousCount)
-                                                        })
+                                                chrome.runtime.sendMessage({'type': 'comments-first', 'data': {profile: steamIdMapping[player['id']]}}, firstHtml => {
+                                                    const parser = new DOMParser();
+                                                    const htmlDocument = parser.parseFromString(firstHtml, "text/html");
+                                                    if(htmlDocument.getElementsByClassName('profile_private_info').length){
+                                                        updateSuspiciousComments(player['id'], 'Private')
                                                     }
                                                     else{
-                                                        updateSuspiciousComments(player['id'], 'Off')
+                                                        const script = Array.from(htmlDocument.querySelectorAll("script")).find(s => s.textContent.includes("InitializeCommentThread"));
+                                                        if(script){
+                                                            const totalCommentCount = parseInt(script.textContent.match(/"total_count"\s*:\s*(\d+)/)[1], 10)
+                                                            const pageSize = parseInt(script.textContent.match(/"pagesize"\s*:\s*(\d+)/)[1], 10)
+                                                            const totalPages = Math.ceil(totalCommentCount / pageSize);
+                                                            chrome.runtime.sendMessage({'type': 'comments', 'data': {profile: steamIdMapping[player['id']], totalPages: totalPages}}, htmlPages => {
+                                                                htmlPages.push(firstHtml)
+                                                                let suspiciousCount = 0
+                                                                for (const html of htmlPages) {
+                                                                    const htmlDocument = parser.parseFromString(html, "text/html");
+                                                                    let comments = Array.from(htmlDocument.getElementsByClassName('commentthread_comment_text')).map(el => el.textContent.trim())
+                                                                    suspiciousCount += comments.filter(isSuspicious).length
+                                                                }
+                                                                updateSuspiciousComments(player['id'], suspiciousCount)
+                                                            })
+                                                        }
+                                                        else{
+                                                            updateSuspiciousComments(player['id'], 'Off')
+                                                        }
                                                     }
-                                                }
-                                                
-                                            });
-                                        })
+                                                    
+                                                });
+                                            })
+                                        }); 
                                     });
                                     counterReady = true
                                 })

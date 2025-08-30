@@ -71,60 +71,60 @@ window.onload = () => {
     var mutationObserverForReport = new MutationObserver(function (){
         if(Boolean(document.querySelector('div[name="info"]') && Boolean(document.querySelector('div[name="info"]').querySelector('button')))){
             // report all opponents in room
-            if(!reportShield){
-                reportShield = true
-                setTimeout(() => {
-                    let infoContainer = document.querySelector('div[name="info"]')
-                    let newButton = infoContainer.querySelectorAll('button')[infoContainer.querySelectorAll('button').length - 1].cloneNode(true)
-                    newButton.removeAttribute('href')
-                    newButton.style.marginTop = '10px';
-                    (newButton.querySelector('span') || newButton).innerText = 'Report all opponents'
-                    newButton.addEventListener('click', function(){
-                        fetch("https://www.faceit.com/api/users/v1/sessions/me", {
-                            "headers": getHeaders(),
-                            "mode": "cors",
-                            "credentials": "include"
-                        })
-                        .then(r => r.json())
-                        .then(r => {
-                            let userId = r['payload']['id']
-                            let matchId = location.href.split('room/')[1]
-                            fetch(`https://api.faceit.com/match/v2/match/${matchId}`)
-                            .then(r => r.json())
-                            .then(r => {
-                                const { faction1, faction2 } = r['payload']['teams']
-                                let opponentFaction = (
-                                    faction1['roster'].find(player => {
-                                        return player['id'] == userId
-                                    }) === undefined
-                                ) ? faction1 : faction2
-                                opponentFaction['roster'].forEach(player => {
-                                    fetch(`https://api.faceit.com/fbi/v1/matches/${matchId}/report`, {
-                                        headers: {
-                                            "accept": "application/json, text/plain, */*",
-                                            "accept-language": "en-US,en;q=0.9",
-                                            "content-type": "application/json",
-                                        },
-                                        referrer: "https://api.faceit.com/proxy.html",
-                                        referrerPolicy: "strict-origin-when-cross-origin",
-                                        body: JSON.stringify({
-                                            "matchId": matchId,
-                                            "reportedUserId": player['id'],
-                                            "category": "cheat",
-                                            "subCategory": "cheating",
-                                            "comment": ""
-                                        }),
-                                        method: "POST",
-                                        mode: "cors",
-                                    });
-                                });
-                                alert('All opponents reported!')
-                            })
-                        })
-                    })
-                    infoContainer.append(newButton)
-                }, 1000);
-            }
+            // if(!reportShield){
+            //     reportShield = true
+            //     setTimeout(() => {
+            //         let infoContainer = document.querySelector('div[name="info"]')
+            //         let newButton = infoContainer.querySelectorAll('button')[infoContainer.querySelectorAll('button').length - 1].cloneNode(true)
+            //         newButton.removeAttribute('href')
+            //         newButton.style.marginTop = '10px';
+            //         (newButton.querySelector('span') || newButton).innerText = 'Report all opponents'
+            //         newButton.addEventListener('click', function(){
+            //             fetch("https://www.faceit.com/api/users/v1/sessions/me", {
+            //                 "headers": getHeaders(),
+            //                 "mode": "cors",
+            //                 "credentials": "include"
+            //             })
+            //             .then(r => r.json())
+            //             .then(r => {
+            //                 let userId = r['payload']['id']
+            //                 let matchId = location.href.split('room/')[1]
+            //                 fetch(`https://api.faceit.com/match/v2/match/${matchId}`)
+            //                 .then(r => r.json())
+            //                 .then(r => {
+            //                     const { faction1, faction2 } = r['payload']['teams']
+            //                     let opponentFaction = (
+            //                         faction1['roster'].find(player => {
+            //                             return player['id'] == userId
+            //                         }) === undefined
+            //                     ) ? faction1 : faction2
+            //                     opponentFaction['roster'].forEach(player => {
+            //                         fetch(`https://api.faceit.com/fbi/v1/matches/${matchId}/report`, {
+            //                             headers: {
+            //                                 "accept": "application/json, text/plain, */*",
+            //                                 "accept-language": "en-US,en;q=0.9",
+            //                                 "content-type": "application/json",
+            //                             },
+            //                             referrer: "https://api.faceit.com/proxy.html",
+            //                             referrerPolicy: "strict-origin-when-cross-origin",
+            //                             body: JSON.stringify({
+            //                                 "matchId": matchId,
+            //                                 "reportedUserId": player['id'],
+            //                                 "category": "cheat",
+            //                                 "subCategory": "cheating",
+            //                                 "comment": ""
+            //                             }),
+            //                             method: "POST",
+            //                             mode: "cors",
+            //                         });
+            //                     });
+            //                     alert('All opponents reported!')
+            //                 })
+            //             })
+            //         })
+            //         infoContainer.append(newButton)
+            //     }, 1000);
+            // }
             // // auto download current match ip
             // if(!ipShield){
             //     ipShield = true
@@ -367,12 +367,13 @@ window.onload = () => {
                                                     
                                                 });
                                                 // get CS Watch message
-                                                fetch(`https://whateverorigin.org/get?url=${encodeURIComponent(`https://cswatch.in/api/players/${steamIdMapping[player['id']]}`)}`)
+                                                let csWatchUrl = `https://cswatch.in/api/players/${steamIdMapping[player['id']]}`
+                                                fetch(`https://whateverorigin.org/get?url=${encodeURIComponent(csWatchUrl)}`)
                                                 .then(r => r.json())
                                                 .then(r => JSON.parse(r['contents']))
                                                 .then(r => {
-                                                    let csWatchContainer = document.getElementById(`suspicious-comments-${player['id']}`)
-                                                    csWatchContainer.innerHTML = `<span style="color: #a7a7a7; font-size: 12px;">CSW: ${r['csWatchAnalysis']['message']}</span>`
+                                                    let csWatchContainer = document.getElementById(`cs-watch-${player['id']}`)
+                                                    csWatchContainer.innerHTML = `<span style="color: #a7a7a7; font-size: 12px;"><a style="color: aqua;" target="_blank" href="${csWatchUrl}">CSW</a>: ${r['csWatchAnalysis']['message']}</span>`
                                                 })
                                             })
                                         }); 
